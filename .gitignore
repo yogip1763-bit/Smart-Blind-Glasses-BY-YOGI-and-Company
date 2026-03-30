@@ -1,41 +1,64 @@
-# Prerequisites
-*.d
+import serial #serial import for serial communications
+import time
+import  pyttsx3
+import speech_recognition as sr
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+engine = pyttsx3.init('sapi5')
+voices  = engine.getProperty('voices')
+#print(voices[1].id)
+engine.setProperty('voice',voices[1].id)
 
-# Precompiled Headers
-*.gch
-*.pch
+ArduinoSerial  = serial.Serial('com3',9600) #Create Serial port object called arduinoSerialData
 
-# Linker files
-*.ilk
 
-# Debugger Files
-*.pdb
+def  speak(audio):
+    engine.say(audio)
+    engine.runAndWait()
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+def takecommand():
+    #It takes microphone input from the user and returns string as output
 
-# Fortran module files
-*.mod
-*.smod
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening....")
+        r.pause_threshold = 1
+        audio = r.listen(source)
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+    try:
+        print("Recogninsing....")
+        query = r.recognize_google(audio,  language = 'en-in')
+        print(f"User said: {query}\
+")
 
-# Executables
-*.exe
-*.out
-*.app
+    except  Exception as e:
+        print(e)
+        print("Say that again please...")
+        return "None"
+    return query
 
-# debug information files
-*.dwo
+if __name__ == "__main__":
+    while True:
+     
+        query = takecommand().lower()
+        #logic  for executing tasks based on query
+
+        distance = int(ArduinoSerial.readline())  #read the serial data and print it as line
+        dist=str(distance)
+        print(dist)
+        if "where is the object" in query:
+            if (distance<20):
+                    speak("StopStop, Close object in front.")
+            
+                
+            elif (20<distance<60):
+                    speak("object  is quite a distance away.")
+                    
+            elif (40<distance<100):
+                    speak("object is 1 meter away.")
+
+            else:
+                    speak("Object is far away.")
+        
+        else:
+            print("nothing")
+        
